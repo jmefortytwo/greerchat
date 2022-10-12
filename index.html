@@ -30,14 +30,37 @@
       var input = document.getElementById('input');
 
       var handle = prompt("what's your handle?");
-      if(handle == '') {
-        handle = 'anonymous';
-      }
-      socket.emit('chat message', 'server: '+handle+' has joined!');
+      socket.emit('handle', handle);
 
       form.addEventListener('submit', function(e) {
         e.preventDefault();
-        if (input.value) {
+        bfs = input.value.indexOf(' ');
+        afs = input.value.substring(bfs+1);
+        if(bfs < 1) {
+          bfs = 9;
+        }
+        if(input.value == '/users') {
+          socket.emit('gethandles');
+          input.value = '';
+        }
+        else if(input.value.substring(0,bfs)=='/whisper') {
+          /*var count = 0;
+          for(i = 0;i<input.value.length;i++) {
+            if(input.value.substring(i,i+1)==' ') {
+              count++;
+            }
+          }
+          if(count<2) {
+            alert('incorrect usage');
+          }*/
+          console.log(afs.substring(0,afs.indexOf(' ')));
+          console.log(afs.substring(afs.indexOf(' ')+1));
+          socket.emit('target', afs.substring(0,afs.indexOf(' ')));
+          socket.emit('whandle', handle);
+          socket.emit('whisper', afs.substring(afs.indexOf(' ')+1));
+          input.value = '';
+        }
+        else if (input.value) {
           socket.emit('chat message', handle+': '+input.value);
           input.value = '';
         }
@@ -48,6 +71,14 @@
         item.textContent = msg;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
+      });
+      socket.on('handle', () => {
+        handle = prompt('handle already used or disallowed. choose new handle');
+        socket.emit('handle', handle);
+      });
+      socket.on('anonymous', nhandle => {
+        handle = nhandle;
+        socket.emit('handle', handle);
       });
     </script>
   </body>
