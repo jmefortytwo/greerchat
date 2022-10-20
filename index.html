@@ -15,7 +15,7 @@
       #messages > li:nth-child(odd) { background: rgba(0, 0, 0, 0.15); }
     </style>
   </head>
-  <body>
+  <body id='bdy'>
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
@@ -28,9 +28,13 @@
       var messages = document.getElementById('messages');
       var form = document.getElementById('form');
       var input = document.getElementById('input');
+      var myroom = 'main';
 
       var handle = prompt("what's your handle?");
       socket.emit('handle', handle);
+      socket.on('h', h => {
+        handle = h;
+      });
 
       form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -43,21 +47,32 @@
           socket.emit('gethandles');
           input.value = '';
         }
+        else if(input.value == '/disconnect') {
+          socket.disconnect();
+          input.value = '';
+        }
+        else if(input.value.substring(0,bfs)=='/create') {
+          socket.emit('createroom', afs);
+          input.value = '';
+        }
+        else if(input.value.substring(0,bfs)=='/join') {
+          socket.emit('join', afs);
+          input.value = '';
+        }
         else if(input.value.substring(0,bfs)=='/whisper') {
-          /*var count = 0;
-          for(i = 0;i<input.value.length;i++) {
-            if(input.value.substring(i,i+1)==' ') {
-              count++;
-            }
-          }
-          if(count<2) {
-            alert('incorrect usage');
-          }*/
           console.log(afs.substring(0,afs.indexOf(' ')));
           console.log(afs.substring(afs.indexOf(' ')+1));
           socket.emit('target', afs.substring(0,afs.indexOf(' ')));
           socket.emit('whandle', handle);
           socket.emit('whisper', afs.substring(afs.indexOf(' ')+1));
+          input.value = '';
+        }
+        else if(input.value.substring(0,bfs)=='/help') {
+          socket.emit('help', afs);
+          input.value = '';
+        }
+        else if(input.value=='/room') {
+          socket.emit('room');
           input.value = '';
         }
         else if (input.value) {
